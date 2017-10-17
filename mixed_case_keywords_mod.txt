@@ -72,7 +72,7 @@ LAB_13D0
       BEQ   LAB_13D1          ; go do word_table_chr if match
 
 ; *** replace
-;      BCC   LAB_13EA          ; if < keyword first character table byte go restore
+;     BCC   LAB_13EA          ; if < keyword first character table byte go restore
 ; *** with
       BCC   PATCH_LC2         ; if < keyword first character table byte go restore
 ; *** end
@@ -106,7 +106,7 @@ LAB_13D8
       CMP   Ibuffs,X          ; compare with byte from input buffer
       BEQ   LAB_13D6          ; go compare next if match
 
-;*** add
+; *** add
       ORA #$20                ; repeat with lower case
       CMP Ibuffs,X            ; compare with byte from input buffer
       BEQ LAB_13D6            ; go compare next if match

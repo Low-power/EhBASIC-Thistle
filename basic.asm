@@ -947,6 +947,12 @@ LAB_13AC
 	LDA	Ibuffs,X		; get byte from input buffer
 	BEQ	LAB_13EC		; if null save byte then exit
 
+	CMP	#'{'			; convert lower to upper case
+	BCS	LAB_13EC		; is above lower case
+	CMP	#'a'
+	BCC	PATCH_LC		; is below lower case
+	AND	#$DF			; mask lower case bit
+PATCH_LC
 	CMP	#'_'			; compare with "_"
 	BCS	LAB_13EC		; if >= go save byte then continue crunching
 
@@ -981,7 +987,7 @@ LAB_13D0
 	CMP	(ut2_pl),Y		; compare with keyword first character table byte
 	BEQ	LAB_13D1		; go do word_table_chr if match
 
-	BCC	LAB_13EA		; if < keyword first character table byte go restore
+	BCC	PATCH_LC2		; if < keyword first character table byte go restore
 					; Y and save to crunched
 
 	INY				; else increment pointer
@@ -1009,6 +1015,10 @@ LAB_13D8
 	BMI	LAB_13EA		; all bytes matched so go save token
 
 	INX				; next buffer byte
+	CMP	Ibuffs,X		; compare with byte from input buffer
+	BEQ	LAB_13D6		; go compare next if match
+
+	ORA	#$20			; repeat with lower case
 	CMP	Ibuffs,X		; compare with byte from input buffer
 	BEQ	LAB_13D6		; go compare next if match
 
@@ -1073,6 +1083,7 @@ LAB_141B
 	BNE	LAB_13D8		; go test next word if not zero byte (end of table)
 
 					; reached end of table with no match
+PATCH_LC2
 	LDA	Ibuffs,X		; restore byte from input buffer
 	BPL	LAB_13EA		; branch always (all bytes in buffer are $00-$7F)
 					; go save byte in output and continue crunching
