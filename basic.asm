@@ -441,7 +441,7 @@ Ram_top		= $C000	; end of user RAM+1 (set as needed, should be page aligned)
 
 ; This start can be changed to suit your system
 
-	*=	$C000
+	.org	$C000
 
 ; BASIC cold start entry point
 
@@ -1555,7 +1555,7 @@ LAB_1602
 	JMP	LAB_LET		; else go do implied LET
 
 LAB_1609
-	CMP	#[TK_TAB-$80]*2	; compare normalised token * 2 with TAB
+	CMP	#(TK_TAB-$80)*2	; compare normalised token * 2 with TAB
 	BCS	LAB_15D9		; branch if A>=TAB (do syntax error then warm start)
 					; only tokens before TAB can start a line
 	TAY				; copy to index
