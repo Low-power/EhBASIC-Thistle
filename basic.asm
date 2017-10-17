@@ -419,7 +419,7 @@ LAB_SKFE		= LAB_STAK+$FE
 LAB_SKFF		= LAB_STAK+$FF
 					; flushed stack address
 
-ccflag		= $0200	; BASIC CTRL-C flag, 00 = enabled, 01 = dis
+ccflag		= $2900	; BASIC CTRL-C flag, 00 = enabled, 01 = dis
 ccbyte		= ccflag+1	; BASIC CTRL-C byte
 ccnull		= ccbyte+1	; BASIC CTRL-C byte timeout
 
@@ -436,12 +436,14 @@ Ibuffs		= IRQ_vec+$14
 					; start of input buffer after IRQ/NMI code
 Ibuffe		= Ibuffs+$47; end of input buffer
 
-Ram_base		= $0300	; start of user RAM (set as needed, should be page aligned)
-Ram_top		= $C000	; end of user RAM+1 (set as needed, should be page aligned)
+Ram_base		= $2A00	; start of user RAM (set as needed, should be page aligned)
+Ram_top		= $A000	; end of user RAM+1 (set as needed, should be page aligned)
 
 ; This start can be changed to suit your system
 
-	.org	$C000
+	.org	$0200
+
+JMP	RES_vec
 
 ; BASIC cold start entry point
 
@@ -7798,8 +7800,7 @@ LAB_MSZM
 	.byte	$0D,$0A,"Memory size ",$00
 
 LAB_SMSG
-	.byte	" Bytes free",$0D,$0A,$0A
-	.byte	"Enhanced BASIC 2.22",$0A,$00
+	.byte	" Bytes free",$0D,$0A,$00
 
 ; numeric constants and series
 

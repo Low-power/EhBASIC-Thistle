@@ -5,6 +5,8 @@
 ; running [F6] then start the code with the RESET [CTRL][SHIFT]R. Just selecting RUN
 ; will do nothing, you'll still have to do a reset to run the code.
 
+	.setcpu "65c02"
+	.feature labels_without_colons
 	.include "basic.asm"
 
 ; put the IRQ and MNI code in RAM so that it can be changed
@@ -14,16 +16,17 @@ NMI_vec	= IRQ_vec+$0A	; NMI code vector
 
 ; setup for the 6502 simulator environment
 
-IO_AREA	= $F000		; set I/O area for this monitor
+GIO_AREA	= $E000		; set I/O area for this monitor
 
-ACIAsimwr	= IO_AREA+$01	; simulated ACIA write port
-ACIAsimrd	= IO_AREA+$04	; simulated ACIA read port
+GIOsimis	= GIO_AREA+$00
+GIOsimrd	= GIO_AREA+$01
+GIOsimwr	= GIO_AREA+$03
 
 ; now the code. all this does is set up the vectors and interrupt code
 ; and wait for the user to select [C]old or [W]arm start. nothing else
 ; fits in less than 128 bytes
 
-	.org	$FF80			; pretend this is in a 1/8K ROM
+;	.org	$FF80			; pretend this is in a 1/8K ROM
 
 ; reset vector points here
 
@@ -67,19 +70,22 @@ LAB_nokey
 LAB_dowarm
 	JMP	LAB_WARM		; do EhBASIC warm start
 
-; byte out to simulated ACIA
+; byte out to terminal driver
 
-ACIAout
-	STA	ACIAsimwr		; save byte to simulated ACIA
+GIOout
+	STA	GIOsimwr		; send byte to terminal driver
 	RTS
 
-; byte in from simulated ACIA
+; byte in from keyboard buffer
 
-ACIAin
-	LDA	ACIAsimrd		; get byte from simulated ACIA
+GIOin
+	LDA	GIOsimis		; read buffer status
 	BEQ	LAB_nobyw		; branch if no byte waiting
-
-	SEC				; flag byte received
+	LDA	GIOsimrd		; get byte from keyboard buffer
+	BNE	:+			; check if byte is scancode
+	LDA	GIOsimrd		; trash scancode
+	BRA	LAB_nobyw		; mark as no byte waiting
+:	SEC				; flag byte received
 	RTS
 
 LAB_nobyw
@@ -91,8 +97,8 @@ no_save				; empty save vector for EhBASIC
 ; vector tables
 
 LAB_vec
-	.word	ACIAin		; byte in from simulated ACIA
-	.word	ACIAout		; byte out to simulated ACIA
+	.word	GIOin		; byte in from keyboard buffer
+	.word	GIOout		; byte out to terminal driver
 	.word	no_load		; null load vector for EhBASIC
 	.word	no_save		; null save vector for EhBASIC
 
@@ -120,15 +126,18 @@ NMI_CODE
 
 END_CODE
 
+; sign on string
+
 LAB_mess
-	.byte	$0D,$0A,"6502 EhBASIC [C]old/[W]arm ?",$00
-					; sign on string
+	.byte   $0D,$0A,"Enhanced BASIC 2.22 (c) Lee Davison"
+	.byte   $0D,$0A,"[C]old/[W]arm ?",$00
+
 
 ; system vectors
 
-	.org	$FFFA
+;	.org	$FFFA
 
-	.word	NMI_vec		; NMI vector
-	.word	RES_vec		; RESET vector
-	.word	IRQ_vec		; IRQ vector
+;	.word	NMI_vec		; NMI vector
+;	.word	RES_vec		; RESET vector
+;	.word	IRQ_vec		; IRQ vector
 
