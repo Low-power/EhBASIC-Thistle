@@ -55,20 +55,9 @@ LAB_signon
 	BNE	LAB_signon		; loop, branch always
 
 LAB_nokey
-	JSR	V_INPT		; call scan input device
-	BCC	LAB_nokey		; loop if no key
-
-	AND	#$DF			; mask xx0x xxxx, ensure upper case
-	CMP	#'W'			; compare with [W]arm start
-	BEQ	LAB_dowarm		; branch if [W]arm start
-
+	LDA	#'C'		; fake input
 	CMP	#'C'			; compare with [C]old start
-	BNE	RES_vec		; loop if not [C]old start
-
 	JMP	LAB_COLD		; do EhBASIC cold start
-
-LAB_dowarm
-	JMP	LAB_WARM		; do EhBASIC warm start
 
 ; byte out to terminal driver
 
@@ -129,8 +118,7 @@ END_CODE
 ; sign on string
 
 LAB_mess
-	.byte   $0D,$0A,"Enhanced BASIC 2.22 (c) Lee Davison"
-	.byte   $0D,$0A,"[C]old/[W]arm ?",$00
+	.byte   $0D,$0A,"Enhanced BASIC 2.22 (c) Lee Davison",$00
 
 
 ; system vectors

@@ -498,75 +498,13 @@ TabLoop
 	STA	g_step		; save it
 	LDX	#des_sk		; descriptor stack start
 	STX	next_s		; set descriptor stack pointer
-	JSR	LAB_CRLF		; print CR/LF
-	LDA	#<LAB_MSZM		; point to memory size message (low addr)
-	LDY	#>LAB_MSZM		; point to memory size message (high addr)
-	JSR	LAB_18C3		; print null terminated string from memory
-	JSR	LAB_INLN		; print "? " and get BASIC input
-	STX	Bpntrl		; set BASIC execute pointer low byte
-	STY	Bpntrh		; set BASIC execute pointer high byte
-	JSR	LAB_GBYT		; get last byte back
 
-	BNE	LAB_2DAA		; branch if not null (user typed something)
-
-	LDY	#$00			; else clear Y
-					; character was null so get memory size the hard way
-					; we get here with Y=0 and Itempl/h = Ram_base
-LAB_2D93
-	INC	Itempl		; increment temporary integer low byte
-	BNE	LAB_2D99		; branch if no overflow
-
-	INC	Itemph		; increment temporary integer high byte
-	LDA	Itemph		; get high byte
-	CMP	#>Ram_top		; compare with top of RAM+1
-	BEQ	LAB_2DB6		; branch if match (end of user RAM)
-
-LAB_2D99
-	LDA	#$55			; set test byte
-	STA	(Itempl),Y		; save via temporary integer
-	CMP	(Itempl),Y		; compare via temporary integer
-	BNE	LAB_2DB6		; branch if fail
-
-	ASL				; shift test byte left (now $AA)
-	STA	(Itempl),Y		; save via temporary integer
-	CMP	(Itempl),Y		; compare via temporary integer
-	BEQ	LAB_2D93		; if ok go do next byte
-
-	BNE	LAB_2DB6		; branch if fail
-
-LAB_2DAA
-	JSR	LAB_2887		; get FAC1 from string
-	LDA	FAC1_e		; get FAC1 exponent
-	CMP	#$98			; compare with exponent = 2^24
-	BCS	LAB_GMEM		; if too large go try again
-
-	JSR	LAB_F2FU		; save integer part of FAC1 in temporary integer
-					; (no range check)
-
-LAB_2DB6
-	LDA	Itempl		; get temporary integer low byte
-	LDY	Itemph		; get temporary integer high byte
-	CPY	#<Ram_base+1	; compare with start of RAM+$100 high byte
-	BCC	LAB_GMEM		; if too small go try again
-
-
-; uncomment these lines if you want to check on the high limit of memory. Note if
-; Ram_top is set too low then this will fail. default is ignore it and assume the
-; users know what they're doing!
-
-;	CPY	#>Ram_top		; compare with top of RAM high byte
-;	BCC	MEM_OK		; branch if < RAM top
-
-;	BNE	LAB_GMEM		; if too large go try again
-					; else was = so compare low bytes
-;	CMP	#<Ram_top		; compare with top of RAM low byte
-;	BEQ	MEM_OK		; branch if = RAM top
-
-;	BCS	LAB_GMEM		; if too large go try again
-
-;MEM_OK
-	STA	Ememl			; set end of mem low byte
-	STY	Ememh			; set end of mem high byte
+	LDA	#<Ram_top	; set end addr low byte
+	LDY	#>Ram_top	; set end addr high byte
+	STA	Itempl		; set temporary integer low byte
+	STY	Itemph		; set temporary integer high byte
+	STA	Ememl			; save end of mem low byte
+	STY	Ememh			; save end of mem high byte
 	STA	Sstorl		; set bottom of string space low byte
 	STY	Sstorh		; set bottom of string space high byte
 
@@ -7796,11 +7734,8 @@ StrTab
 	.word	Ram_base		; start of user RAM
 EndTab
 
-LAB_MSZM
-	.byte	$0D,$0A,"Memory size ",$00
-
 LAB_SMSG
-	.byte	" Bytes free",$0D,$0A,$00
+	.byte	" bytes free",$0D,$0A,$00
 
 ; numeric constants and series
 
