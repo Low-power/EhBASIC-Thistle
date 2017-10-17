@@ -268,19 +268,16 @@ IrqBase		= $DF		; IRQ handler enabled/setup/triggered flags
 
 ;			= $DE		; unused
 ;			= $DF		; unused
-;			= $E0		; unused
-;			= $E1		; unused
-;			= $E2		; unused
-;			= $E3		; unused
-;			= $E4		; unused
-;			= $E5		; unused
-;			= $E6		; unused
-;			= $E7		; unused
-;			= $E8		; unused
-;			= $E9		; unused
-;			= $EA		; unused
-;			= $EB		; unused
-;			= $EC		; unused
+ccflag		= $E0		; BASIC CTRL-C flag, 00 = enabled, 01 = dis
+ccbyte		= ccflag+1	; BASIC CTRL-C byte
+ccnull		= ccbyte+1	; BASIC CTRL-C byte timeout
+
+VEC_CC		= ccnull+1	; ctrl c check vector
+
+VEC_IN		= VEC_CC+2	; input vector
+VEC_OUT		= VEC_IN+2	; output vector
+VEC_LD		= VEC_OUT+2	; load vector
+VEC_SV		= VEC_LD+2	; save vector
 ;			= $ED		; unused
 ;			= $EE		; unused
 
@@ -419,24 +416,13 @@ LAB_SKFE		= LAB_STAK+$FE
 LAB_SKFF		= LAB_STAK+$FF
 					; flushed stack address
 
-ccflag		= $2900	; BASIC CTRL-C flag, 00 = enabled, 01 = dis
-ccbyte		= ccflag+1	; BASIC CTRL-C byte
-ccnull		= ccbyte+1	; BASIC CTRL-C byte timeout
-
-VEC_CC		= ccnull+1	; ctrl c check vector
-
-VEC_IN		= VEC_CC+2	; input vector
-VEC_OUT		= VEC_IN+2	; output vector
-VEC_LD		= VEC_OUT+2	; load vector
-VEC_SV		= VEC_LD+2	; save vector
-
 ; Ibuffs can now be anywhere in RAM, ensure that the max length is < $80
 
 Ibuffs		= IRQ_vec+$14
 					; start of input buffer after IRQ/NMI code
 Ibuffe		= Ibuffs+$47; end of input buffer
 
-Ram_base		= $2A00	; start of user RAM (set as needed, should be page aligned)
+Ram_base		= $2B00	; start of user RAM (set as needed, should be page aligned)
 Ram_top		= $A000	; end of user RAM+1 (set as needed, should be page aligned)
 
 ; This start can be changed to suit your system
@@ -447,7 +433,7 @@ JMP	RES_vec
 
 ; BASIC cold start entry point
 
-; new page 2 initialisation, copy block to ccflag on
+; copy block from PG2_TABS to $00E0 - $00EC
 
 LAB_COLD
 	LDY	#PG2_TABE-PG2_TABS-1
