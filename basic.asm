@@ -7649,8 +7649,12 @@ V_INPT
 V_OUTP
 	JMP	(VEC_OUT)		; send byte to output device
 V_LOAD
+	JSR	LAB_EVEX
+	JSR	LAB_CTST
 	JMP	(VEC_LD)		; load BASIC program
 V_SAVE
+	JSR	LAB_EVEX
+	JSR	LAB_CTST
 	JMP	(VEC_SV)		; save BASIC program
 
 ; The rest are tables messages and code for RAM
